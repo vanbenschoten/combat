@@ -2,7 +2,8 @@ from __future__ import division
 from cctbx.array_family import flex
 from cctbx import crystal
 from cctbx import miller
-from iotbx.scalepack import merge
+from iotbx import scalepack
+#from iotbx.scalepack import merge
 
 def run(args):
 
@@ -31,13 +32,13 @@ def run(args):
 
   genlat(vars['diffuse'],files)
 
-  args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['lattice_name'], vars['processors'])
+  args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
 
   print args
 
-  input = 'libtbx.python genlat_labelit_sauter.py bragg=/netapp/home/vanben/lunus_processing/trypsin/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf  diffuse=/netapp/home/vanben/lunus_processing/trypsin/diffuse indexing.data=../diffuse/set_1_1_00001.pickle indexing.data=../diffuse/set_1_1_00045.pickle indexing.data=../diffuse/set_1_1_00090.pickle codecamp.maxcell=800 xia2=yes index_only=True analyze.image=45 diffuse.lattice.resolution=2.00 cell.a=55.37 cell.b=66.64 cell.c=82.00 inputlist.fname=../diffuse/genlat.input diffuse.lattice.fname=blga_05.hkl np=8 target_cell=55.37,82.00,66.64,90,90,90 known_setting=5 distl.minimum_signal_height=5'
+  #input = 'libtbx.python genlat_labelit_sauter.py bragg=/netapp/home/vanben/lunus_processing/trypsin/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf  diffuse=/netapp/home/vanben/lunus_processing/trypsin/diffuse indexing.data=../diffuse/set_1_1_00001.pickle indexing.data=../diffuse/set_1_1_00045.pickle indexing.data=../diffuse/set_1_1_00090.pickle codecamp.maxcell=800 xia2=yes index_only=True analyze.image=45 diffuse.lattice.resolution=2.00 cell.a=55.37 cell.b=66.64 cell.c=82.00 inputlist.fname=../diffuse/genlat.input diffuse.lattice.fname=blga_05.hkl np=8 target_cell=55.37,82.00,66.64,90,90,90 known_setting=5 distl.minimum_signal_height=5'
     
-  os.system(input)
+  os.system('libtbx.python genlat_labelit_sauter.py ' + args)
 
     #"args" are the arguments normally passed to integrate.py on the command line (put into get_input_dict command)
     #diffuse_integration(args)
@@ -231,7 +232,7 @@ def genlat(prefix, files):
 
   return
 
-def args_generator(location_diffuse, index_1, index_2, cella, cellb, cellc, resolution, lattice_name, processors):
+def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, cellc, resolution, lattice_name, processors, u_p, k_setting):
 
   #Will need a way to read in the known_setting parameter
 
@@ -249,6 +250,7 @@ def args_generator(location_diffuse, index_1, index_2, cella, cellb, cellc, reso
 
   args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_1)
   args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_2)
+  args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_3)
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
@@ -258,7 +260,9 @@ def args_generator(location_diffuse, index_1, index_2, cella, cellb, cellc, reso
   args += 'cell.c=%0.2f ' %float(cellc)
   args += 'inputlist.fname=%s/genlat.input ' %location_diffuse
   args += 'diffuse.lattice.fname=%s ' %lattice_name
-  args += 'np=%d ' %processors
+  args += 'target_cell= %s,%s,%s,%s,%s,%s ' %(u_p[0], u_p[1], u_p[2], u_p[3], u_p[4], u_p[5])
+  args += 'known_setting= %d ' %k_setting
+  args += 'np=%d' %processors
 
 
   return args

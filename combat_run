@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -o /netapp/home/vanben/lunus_processing/blga05/COMBAT
-#$ -e /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -o /netapp/home/vanben/lunus_processing/061814/crystal1/COMBAT
+#$ -e /netapp/home/vanben/lunus_processing/061814/crystal1/COMBAT
 #$ -cwd
 #$ -l mem_free=2G
 #$ -pe smp 8
@@ -20,6 +20,5 @@ source $XIA2_ROOT/setup.sh
 
 libtbx.configure xfel
 
-echo 'hello!'
 
-libtbx.python program_sauter.py bragg=/netapp/home/vanben/lunus_processing/blga05/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00090.cbf diffuse=/netapp/home/vanben/lunus_processing/blga05/diffuse xia2=yes cella=40.830 cellb=49.960 cellc=84.550 anglea=90 angleb=90 anglec=90 spacegroup='P 21 21 21' reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='blga_05.hkl' output_lattice='Blga05' processors=8
+libtbx.python program_sauter.py bragg=/netapp/home/vanben/lunus_processing/blga05/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf diffuse=/netapp/home/vanben/lunus_processing/blga05/diffuse xia2=yes cella=40.830 cellb=49.960 cellc=84.550 reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='crystal1.hkl' output_lattice='crystal1' processors=8 known_setting=9
