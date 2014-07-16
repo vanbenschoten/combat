@@ -21,4 +21,4 @@ source $XIA2_ROOT/setup.sh
 libtbx.configure xfel
 
 
-libtbx.python program_sauter.py bragg=../bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf diffuse=../diffuse xia2=yes cella=40.830 cellb=49.960 cellc=84.550 reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='crystal1.hkl' output_lattice='crystal1' processors=8 known_setting=9
+libtbx.python program_sauter.py bragg=../bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf diffuse=../diffuse xia2=yes cella=40.830 cellb=49.960 cellc=84.550 anglea=90 angleb=90 anglec=90 reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='crystal1.hkl' output_lattice='crystal1' processors=8 known_setting=9
