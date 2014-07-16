@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+#$ -S /bin/bash
+#$ -o /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -e /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -cwd
+#$ -l mem_free=2G
+#$ -pe smp 8
+#$ -R yes
+#$ -l arch=linux-x64
+#$ -l h_rt=24:00:00
+
+source /netapp/home/vanben/programs/phenix-dev-1660/phenix_env.sh
+source /netapp/home/vanben/ccp4/ccp4-6.3.0/bin/ccp4.setup-sh
+export PATH=/netapp/home/vanben/programs/XDS-INTEL64_Linux_x86_64:$PATH
+export KMP_STACKSIZE=8m
+export IPMOSFLM=/netapp/home/vanben/mosflm
+export XIA2_ROOT=/netapp/home/vanben/xia2/xia2-0.3.6.3
+source $XIA2_ROOT/setup.sh
+
+libtbx.configure xfel
+
+echo 'hello!'
+
+libtbx.python program_sauter.py bragg=/netapp/home/vanben/lunus_processing/blga05/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00090.cbf diffuse=/netapp/home/vanben/lunus_processing/blga05/diffuse xia2=yes cella=40.830 cellb=49.960 cellc=84.550 anglea=90 angleb=90 anglec=90 spacegroup='P 21 21 21' reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='blga_05.hkl' output_lattice='Blga05' processors=8

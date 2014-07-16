@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+#$ -S /bin/bash
+#$ -o /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -e /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -cwd
+#$ -l mem_free=2G
+#$ -pe smp 8
+#$ -R yes
+#$ -l arch=linux-x64
+#$ -l h_rt=24:00:00
+
+source /netapp/home/vanben/programs/phenix-dev-1660/phenix_env.sh
+source /netapp/home/vanben/ccp4/ccp4-6.3.0/bin/ccp4.setup-sh
+export PATH=/netapp/home/vanben/programs/XDS-INTEL64_Linux_x86_64:$PATH
+export KMP_STACKSIZE=8m
+export IPMOSFLM=/netapp/home/vanben/mosflm
+export XIA2_ROOT=/netapp/home/vanben/xia2/xia2-0.3.6.3
+source $XIA2_ROOT/setup.sh
+
+libtbx.configure xfel
+
+echo 'hello!'
+
+libtbx.python genlat_labelit_sauter.py bragg=/netapp/home/vanben/lunus_processing/trypsin/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf  diffuse=/netapp/home/vanben/lunus_processing/trypsin/diffuse indexing.data=../diffuse/set_1_1_00001.pickle indexing.data=../diffuse/set_1_1_00045.pickle indexing.data=../diffuse/set_1_1_00090.pickle codecamp.maxcell=800 xia2=yes index_only=True analyze.image=45 diffuse.lattice.resolution=2.00 cell.a=55.37 cell.b=66.64 cell.c=82.00 inputlist.fname=../diffuse/genlat.input diffuse.lattice.fname=blga_05.hkl np=8 target_cell=55.37,82.00,66.64,90,90,90 known_setting=5 distl.minimum_signal_height=5
