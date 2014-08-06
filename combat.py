@@ -164,7 +164,7 @@ def frame_processing(filepath,file):
   os.system("cp " + p +  "image2.img " + p +  "processed/proc." + file)
 
   #Clean up dummy images
-  os.system("rm " + p + "image.img; rm " + p +  "image1.img; rm " +p +"image2.img; rm" + p + "image00.img")
+  os.system("rm " + p + "image.img; rm " + p +  "image1.img; rm " +p +"image2.img; rm " + p + "image00.img")
   os.system("echo "+ file + " was successfully processed!")
   return
 
