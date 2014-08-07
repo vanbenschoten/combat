@@ -272,7 +272,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   args += 'cell.c=%0.2f ' %float(cellc)
   args += 'inputlist.fname=%s/genlat.input ' %location_diffuse
   args += 'diffuse.lattice.fname=%s ' %lattice_name
-  args += 'target_cell= %s,%s,%s,%s,%s,%s ' %(u_p[0], u_p[1], u_p[2], u_p[3], u_p[4], u_p[5])
+  args += 'target_cell=%s,%s,%s,%s,%s,%s ' %(u_p[0], u_p[1], u_p[2], u_p[3], u_p[4], u_p[5])
   args += 'known_setting=%d ' %int(k_setting)
   args += 'np=%d' %processors
 
