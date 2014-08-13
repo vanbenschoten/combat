@@ -21,4 +21,4 @@ source $XIA2_ROOT/setup.sh
 libtbx.configure xfel
 
 
-libtbx.python combat.py bragg=/netapp/home/vanben/lunus_processing/hewl01/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf diffuse=/netapp/home/vanben/lunus_processing/lysozyme/diffuse xia2=yes lunus=yes genlat=yes symmetry=yes cella=78.43 cellb=78.43 cellc=78.43 anglea=90 angleb=90 anglec=90 spacegroup='P 41 21 2' reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='hewl01' output_lattice='LYS' processors=8 known_setting=9
+libtbx.python combat.py bragg=/netapp/home/vanben/lunus_processing/hewl01/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf diffuse=/netapp/home/vanben/lunus_processing/lysozyme/diffuse xia2=yes lunus=yes genlat=yes symmetry=yes cella=78.43 cellb=78.43 cellc=78.43 anglea=90 angleb=90 anglec=90 spacegroup='P 41 21 2' reference='set_1_1_00001.img'  index=1,45 resolution=2.0 lattice_name='hewl01' output_lattice='LYS' processors=8 known_setting=9 thrshim='1 10000' polarim='400 0.8' modeim='15 2'

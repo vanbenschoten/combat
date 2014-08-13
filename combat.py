@@ -28,7 +28,7 @@ def run(args):
     os.system("mkdir " + vars['diffuse'] +"/processed")
 
     for file in files:
-      frame_processing(vars['diffuse'],file)
+      frame_processing(vars['diffuse'],file, vars['thrshim'],vars['polarim'],vars['normim'])
 
     for file in files:
       frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
@@ -140,7 +140,7 @@ def diffuse_conversion(location):
   return files
         
 
-def frame_processing(filepath,file):
+def frame_processing(filepath,file, thr, pol, mode):
 #frame_processing is equivalent to proc.all
     
   p = filepath + '/'
@@ -151,17 +151,17 @@ def frame_processing(filepath,file):
   #os.system("punchim " + file +" 1221 2464 1242 1318 image0.img")
 
   #thrshim removes pixels above and below a given threshold
-  os.system("thrshim " + p + file + " 1 10000 "+ p + "image.img")
+  os.system("thrshim " + p + file + " " + thr + " " + p + "image.img")
 
   #polarim corrects for beam polarization
-  os.system("polarim "+ p + "image.img " + p + "image00.img 400 0.8")
+  os.system("polarim "+ p + "image.img " + p + "image00.img " + pol)
 
 
   #normim corrects for solid-angle normalization and detector-face rotation in a diffraction image
   os.system("normim " + p +  "image00.img " + p +  "image1.img")
 
   #modeim removes the Bragg peaks from an image by mode filtering using a specified mask size
-  os.system("modeim "+ p +  "image1.img " + p + "image2.img 15 2")
+  os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode)
 
   #Move the processed images to a new folder
   os.system("cp " + p +  "image2.img " + p +  "processed/proc." + file)
