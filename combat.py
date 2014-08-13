@@ -23,36 +23,39 @@ def run(args):
     unit_cell_params = [vars['cella'], vars['cellb'], vars['cellc'], vars['anglea'], vars['angleb'],vars['anglec'],vars['spacegroup']]
 
   files = diffuse_conversion(vars['diffuse'])
+  
+  if vars['lunus'] == 'yes':
+    os.system("mkdir " + vars['diffuse'] +"/processed")
 
-  os.system("mkdir " + vars['diffuse'] +"/processed")
+    for file in files:
+      frame_processing(vars['diffuse'],file)
 
-  for file in files:
-    frame_processing(vars['diffuse'],file)
+    for file in files:
+      frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
 
-  for file in files:
-    frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
+    reference_frame(vars['diffuse'] + '/processed/proc.', vars['reference'])
 
-  reference_frame(vars['diffuse'] + '/processed/proc.', vars['reference'])
+    for file in files:
+      frame_scaling(vars['diffuse'] + '/processed/proc.', file)
 
-  for file in files:
-    frame_scaling(vars['diffuse'] + '/processed/proc.', file)
+    genlat(vars['diffuse'],files)
 
-  genlat(vars['diffuse'],files)
+  if vars['genlat'] == 'yes':
 
-  args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
+    args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
 
-  print args
-
-  #input = 'libtbx.python genlat_labelit_sauter.py bragg=/netapp/home/vanben/lunus_processing/trypsin/bragg index_1=set_1_1_00001.cbf index_2=set_1_1_00045.cbf index_3=set_1_1_00090.cbf  diffuse=/netapp/home/vanben/lunus_processing/trypsin/diffuse indexing.data=../diffuse/set_1_1_00001.pickle indexing.data=../diffuse/set_1_1_00045.pickle indexing.data=../diffuse/set_1_1_00090.pickle codecamp.maxcell=800 xia2=yes index_only=True analyze.image=45 diffuse.lattice.resolution=2.00 cell.a=55.37 cell.b=66.64 cell.c=82.00 inputlist.fname=../diffuse/genlat.input diffuse.lattice.fname=blga_05.hkl np=8 target_cell=55.37,82.00,66.64,90,90,90 known_setting=5 distl.minimum_signal_height=5'
+    print args
     
-  os.system('libtbx.python genlat_labelit.py ' + args)
+    os.system('libtbx.python genlat_labelit.py ' + args)
 
     #"args" are the arguments normally passed to integrate.py on the command line (put into get_input_dict command)
     #diffuse_integration(args)
 
-  pre_friedel = map_symmetry_extension(vars['lattice_name'], unit_cell_params)
+  if vars['symmetry'] == 'yes':
+
+    pre_friedel = map_symmetry_extension(vars['lattice_name'], unit_cell_params)
   
-  friedel_hkl(vars['lattice_name'])
+    friedel_hkl(vars['lattice_name'])
 
   
 def get_input_dict(args):
