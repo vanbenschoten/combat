@@ -61,10 +61,14 @@ def run(args):
 def get_input_dict(args):
 # return dictionary of keywords and their values
 
+  fin=open(args, 'r')
+
+  lines = fin.readlines()
+
   input_dict={}
-  for arg in args:
+  for line in lines:
   #print arg   
-    spl=arg.split("=")
+    spl=line.split("=")
     #print spl
     if len(spl)==2:
       input_dict[spl[0]]=spl[1]
