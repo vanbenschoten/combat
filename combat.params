@@ -1,26 +1,77 @@
+#directory path to bragg images
 bragg=
+
+#directory path to diffuse images
 diffuse=
+
+#the first frame to use for LABELIT indexing
 index_1=
+
+#the second frame to use for LABELIT indexing
 index_2=
+
+#the third frame to use for LABELIT indexing
 index_3=
+
+#do you want to run xia2?
 xia2=
+
+#do you want to run lunus?
 lunus=
+
+#do you want to construct the diffuse lattice?
 genlat=
+
+#do you want to extend the maps using symmetry operators? NOTE: CURRENTLY UNDER REPAIR
 symmetry=
+
+#unit cell length along a axis
 cella=
+
+#unit cell length along b axis
 cellb=
+
+#unit cell length along c axis
 cellc=
+
+#unit cell angle a
 anglea=
+
+#unit cell angle b
 angleb=
+
+#unit cell angle c
 anglec=
+
+#crystal space group (formatting: 'P 21 21 21')
 spacegroup=
+
+#? (formatting: 'set_1_1_00001.img')
 reference=
+
+#? (formatting: 1,45)
 index=
+
+#max resolution of diffuse lattice (formatting: 2.0)
 resolution=
+
+#? (formatting: 'my_crystal')
 lattice_name=
+
+#? (formatting: 'my_other_crystal')
 output_lattice=
+
+#number of processors to use in parallel calculations
 processors=
+
+#LABELIT-specific numbering of space groups as described at: http://viper.lbl.gov/cctbx.xfel/index.php/Phil
 known_setting=
+
+#LUNUS thrshim settings (formatting: 1,10000)
 thrshim=
+
+#LUNUS polarim settings (formatting: 145,0.99)
 polarim=
+
+#LUNUS modeim settings (formatting: 15,2)
 modeim=
