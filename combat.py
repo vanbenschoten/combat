@@ -71,7 +71,8 @@ def get_input_dict(args):
     spl=line.split("=")
     #print spl
     if len(spl)==2:
-      input_dict[spl[0]]=spl[1]
+      input_dict[spl[0]]=spl[1][:-1]
+      print input_dict[spl[0]]
 
   input_dict['resolution'] = float(input_dict['resolution'])
   input_dict['processors'] = int(input_dict['processors'])
@@ -81,6 +82,7 @@ def get_input_dict(args):
   input_dict['anglea'] = int(input_dict['anglea'])
   input_dict['angleb'] = int(input_dict['angleb'])
   input_dict['anglec'] = int(input_dict['anglec'])
+  input_dict['known_setting']=int(input_dict['known_setting'])
 
   return input_dict
 
@@ -152,7 +154,7 @@ def frame_processing(filepath,file, thr, pol, mode):
   #os.system("mkdir " + p +"processed")
     
   #punchim removes pixels within a specified XY region
-  #os.system("punchim " + file +" 1221 2464 1242 1318 image0.img")
+  os.system("punchim " + file +" 1221 2464 1242 1318 image0.img")
 
   #thrshim removes pixels above and below a given threshold
   os.system("thrshim " + p + file + " " + thr + " " + p + "image.img")
@@ -362,6 +364,6 @@ if __name__=="__main__":
   import os
   import math
   
-  run(sys.argv[1:])
+  run(sys.argv[1])
 
 

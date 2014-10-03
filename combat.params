@@ -1,77 +1,26 @@
-#directory path to bragg images
-bragg=
-
-#directory path to diffuse images
-diffuse=
-
-#the first frame to use for LABELIT indexing
-index_1=
-
-#the second frame to use for LABELIT indexing
-index_2=
-
-#the third frame to use for LABELIT indexing
-index_3=
-
-#do you want to run xia2?
-xia2=
-
-#do you want to run lunus?
-lunus=
-
-#do you want to construct the diffuse lattice?
-genlat=
-
-#do you want to extend the maps using symmetry operators? NOTE: CURRENTLY UNDER REPAIR
-symmetry=
-
-#unit cell length along a axis
-cella=
-
-#unit cell length along b axis
-cellb=
-
-#unit cell length along c axis
-cellc=
-
-#unit cell angle a
-anglea=
-
-#unit cell angle b
-angleb=
-
-#unit cell angle c
-anglec=
-
-#crystal space group (formatting: 'P 21 21 21')
-spacegroup=
-
-#? (formatting: 'set_1_1_00001.img')
-reference=
-
-#? (formatting: 1,45)
-index=
-
-#max resolution of diffuse lattice (formatting: 2.0)
-resolution=
-
-#? (formatting: 'my_crystal')
-lattice_name=
-
-#? (formatting: 'my_other_crystal')
-output_lattice=
-
-#number of processors to use in parallel calculations
-processors=
-
-#LABELIT-specific numbering of space groups as described at: http://viper.lbl.gov/cctbx.xfel/index.php/Phil
-known_setting=
-
-#LUNUS thrshim settings (formatting: 1,10000)
-thrshim=
-
-#LUNUS polarim settings (formatting: 145,0.99)
-polarim=
-
-#LUNUS modeim settings (formatting: 15,2)
-modeim=
+bragg=/netapp/home/vanben/lunus_processing/gpdq
+diffuse=/netapp/home/vanben/lunus_processing/gpdq/diffuse
+index_1=set_1_1_00002.img
+index_2=set_1_1_00150.img
+index_3=set_1_1_00300.img
+xia2=no
+lunus=no
+genlat=yes
+symmetry=no
+cella=164.27
+cellb=164.27
+cellc=164.27
+anglea=90
+angleb=90
+anglec=90
+spacegroup='P 21 3'
+reference='set_1_1_00002.img'
+index=1,45
+resolution=3.0
+lattice_name='gpdq'
+output_lattice='GpdQ_lattice'
+processors=8
+known_setting=22
+thrshim=1,10000
+polarim=145,0.99
+modeim=15,2
