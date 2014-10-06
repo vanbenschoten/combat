@@ -1,4 +1,4 @@
-from cctbx import crystal
+  from cctbx import crystal
 from cctbx import miller
 from iotbx import scalepack
 from cctbx.array_family import flex
@@ -28,7 +28,7 @@ def run(args):
     os.system("mkdir " + vars['diffuse'] +"/processed")
 
     for file in files:
-      frame_processing(vars['diffuse'],file, vars['thrshim'],vars['polarim'],vars['normim'])
+      frame_processing(vars['diffuse'],file,vars['punchim'],vars['thrshim'],vars['polarim'],vars['normim'])
 
     for file in files:
       frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
@@ -146,28 +146,36 @@ def diffuse_conversion(location):
   return files
         
 
-def frame_processing(filepath,file, thr, pol, mode):
+def frame_processing(filepath,file,punch,thr,pol,mode):
 #frame_processing is equivalent to proc.all
     
   p = filepath + '/'
   
-  #os.system("mkdir " + p +"processed")
+  os.system("mkdir " + p +"processed")
+
+  punch_var=process(punch)
+
+  thr_var=process(thr)
+
+  pol_var=process(pol)
+
+  mode_var=process(mode)
     
   #punchim removes pixels within a specified XY region
-  os.system("punchim " + file +" 1221 2464 1242 1318 image0.img")
+  os.system("punchim " + file + " " + punch_var " image0.img")
 
   #thrshim removes pixels above and below a given threshold
-  os.system("thrshim " + p + file + " " + thr + " " + p + "image.img")
+  os.system("thrshim " + p + "image0.img" + " " + thr_var + " " + p + "image.img")
 
   #polarim corrects for beam polarization
-  os.system("polarim "+ p + "image.img " + p + "image00.img " + pol)
+  os.system("polarim "+ p + "image.img " + p + "image00.img " + pol_var)
 
 
   #normim corrects for solid-angle normalization and detector-face rotation in a diffraction image
   os.system("normim " + p +  "image00.img " + p +  "image1.img")
 
   #modeim removes the Bragg peaks from an image by mode filtering using a specified mask size
-  os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode)
+  os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode_var)
 
   #Move the processed images to a new folder
   os.system("cp " + p +  "image2.img " + p +  "processed/proc." + file)
@@ -176,6 +184,17 @@ def frame_processing(filepath,file, thr, pol, mode):
   os.system("rm " + p + "image.img; rm " + p +  "image1.img; rm " +p +"image2.img; rm " + p + "image00.img")
   os.system("echo "+ file + " was successfully processed!")
   return
+
+def process(string):
+  data = string.split(',')
+
+  line = str()
+
+  for item in data:
+    line.append(item + ' ')
+
+  return line
+
 
 def frame_averaging(frame):
 #frame_averaging is equivalent to proc.avgim
