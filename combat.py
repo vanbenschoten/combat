@@ -42,11 +42,14 @@ def run(args):
 
   if vars['genlat'] == 'yes':
 
-    args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
+    args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'], vars['file_format'])
 
     print args
     
     os.system('libtbx.python genlat_labelit.py ' + args)
+
+    #if vars['file_format'] == hkl:
+       #data = dic_construct()
 
     #"args" are the arguments normally passed to integrate.py on the command line (put into get_input_dict command)
     #diffuse_integration(args)
@@ -273,7 +276,7 @@ def genlat(prefix, files):
 
   return
 
-def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, cellc, resolution, lattice_name, processors, u_p, k_setting):
+def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, cellc, resolution, lattice_name, processors, u_p, k_setting, input):
 
   #Will need a way to read in the known_setting parameter
 
@@ -299,6 +302,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
+  args += 'file_format= %s' %input
   args += 'diffuse.lattice.resolution=%0.2f ' %resolution
   args += 'cell.a=%0.2f ' %float(cella)
   args += 'cell.b=%0.2f ' %float(cellb)
