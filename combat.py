@@ -1,4 +1,4 @@
-  from cctbx import crystal
+from cctbx import crystal
 from cctbx import miller
 from iotbx import scalepack
 from cctbx.array_family import flex
@@ -56,6 +56,11 @@ def run(args):
     pre_friedel = map_symmetry_extension(vars['lattice_name'], unit_cell_params)
   
     friedel_hkl(vars['lattice_name'])
+
+
+  #What is the file name that will be passed to aniso_convert()
+  if vars['anisotropic'] == 'yes':
+    aniso_convert(vars['lattice_name'] + '.hkl')
 
   
 def get_input_dict(args):
@@ -162,7 +167,7 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
   mode_var=process(mode)
     
   #punchim removes pixels within a specified XY region
-  os.system("punchim " + file + " " + punch_var " image0.img")
+  os.system("punchim " + file + " " + punch_var + " image0.img")
 
   #thrshim removes pixels above and below a given threshold
   os.system("thrshim " + p + "image0.img" + " " + thr_var + " " + p + "image.img")
