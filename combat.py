@@ -59,8 +59,8 @@ def run(args):
 
 
   #What is the file name that will be passed to aniso_convert()
-  if vars['anisotropic'] == 'yes':
-    aniso_convert(vars['lattice_name'] + '.hkl')
+  #if vars['anisotropic'] == 'yes':
+    #aniso_convert(vars['lattice_name'] + '.hkl')
 
   
 def get_input_dict(args):
@@ -380,6 +380,40 @@ def friedel_hkl(map):
 
   fin.close()
   fout.close()
+
+def hkl_to_vtk(data, cell_a, cell_b, cell_c, num_a, num_b, num_c):
+  #Origin is defined at 0 0 0
+  vtkfile = open('domain.vtk', 'w')
+
+  latsize = (2*num_a+1)*(2*num_b+1)*(2*num_c+1)
+
+  print >>vtkfile,"# vtk DataFile Version 2.0"
+    print >>vtkfile,"Generated using labelit tools"
+    print >>vtkfile,"ASCII"
+    print >>vtkfile,"DATASET STRUCTURED_POINTS"
+    print >>vtkfile,"DIMENSIONS %d %d %d"%(num_a*2+1,num_b*2+1,num_c*2+1)
+    print >>vtkfile,"SPACING %f %f %f"%(1/cell_a,1/cell_b,1/cell_c)
+    print >>vtkfile,"ORIGIN -0.33481463 -0.33481463 -0.33481463" #%(-i0*a_recip,-j0*b_recip,-k0*c_recip)
+    print >>vtkfile,"POINT_DATA %d"%(latsize)
+    print >>vtkfile,"SCALARS volume_scalars float 1"
+    print >>vtkfile,"LOOKUP_TABLE default\n"
+
+    #print data[1][1][1]["Signal_1"]
+
+    for i in range(-num_a,num_a+1):
+    for j in range(-num_b,num_b+1):
+      for k in range(-num_c,num_c+1):
+        if i in data and j in data[i] and k in data[i][j]:      
+          print >>vtkfile,data[i][j][k]["Signal_1"], 
+          #print 'hello!!!'
+        else:
+          print >>vtkfile,"0.0", 
+
+
+      print >>vtkfile,""
+
+
+
 
 
 if __name__=="__main__":
