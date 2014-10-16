@@ -1,10 +1,10 @@
-bragg=/netapp/home/vanben/lunus_processing/gpdq
-diffuse=/netapp/home/vanben/lunus_processing/gpdq/diffuse
+bragg=/netapp/home/vanben/lunus_processing/blga05/bragg
+diffuse=/netapp/home/vanben/lunus_processing/blga05/diffuse
 index_1=set_1_1_00002.img
 index_2=set_1_1_00150.img
 index_3=set_1_1_00300.img
 file_format=hkl
-xia2=yes
+xia2=no
 lunus=yes
 genlat=yes
 symmetry=no
