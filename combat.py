@@ -159,7 +159,7 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
     
   p = filepath + '/'
   
-  os.system("mkdir " + p +"processed")
+  #os.system("mkdir " + p +"processed")
 
   punch_var=process(punch)
 
@@ -168,9 +168,11 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
   pol_var=process(pol)
 
   mode_var=process(mode)
+
+  print file
     
   #punchim removes pixels within a specified XY region
-  os.system("punchim " + file + " " + punch_var + " image0.img")
+  os.system("punchim " + p + file + " " + punch_var + " image0.img")
 
   #thrshim removes pixels above and below a given threshold
   os.system("thrshim " + p + "image0.img" + " " + thr_var + " " + p + "image.img")
