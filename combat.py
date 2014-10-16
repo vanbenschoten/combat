@@ -196,10 +196,11 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
 def process(string):
   data = string.split(',')
 
-  line = str()
+  line = ''
 
   for item in data:
-    line.append(item + ' ')
+    line += item + 
+    line += ' '
 
   return line
 
