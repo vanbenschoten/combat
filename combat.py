@@ -199,7 +199,7 @@ def process(string):
   line = ''
 
   for item in data:
-    line += item + 
+    line += item
     line += ' '
 
   return line
