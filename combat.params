@@ -23,6 +23,7 @@ lattice_name='gpdq'
 output_lattice='GpdQ_lattice'
 processors=8
 known_setting=22
+punchim=1120,2459,1168,1350
 thrshim=1,10000
 polarim=145,0.99
 modeim=15,2
