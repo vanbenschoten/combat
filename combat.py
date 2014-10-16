@@ -28,7 +28,7 @@ def run(args):
     os.system("mkdir " + vars['diffuse'] +"/processed")
 
     for file in files:
-      frame_processing(vars['diffuse'],file,vars['punchim'],vars['thrshim'],vars['polarim'],vars['normim'])
+      frame_processing(vars['diffuse'],file,vars['punchim'],vars['thrshim'],vars['polarim'],vars['modeim'])
 
     for file in files:
       frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
@@ -302,7 +302,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
-  args += 'file_format= %s' %input
+  args += 'file_format= %s ' %input
   args += 'diffuse.lattice.resolution=%0.2f ' %resolution
   args += 'cell.a=%0.2f ' %float(cella)
   args += 'cell.b=%0.2f ' %float(cellb)
