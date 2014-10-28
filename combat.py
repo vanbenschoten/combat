@@ -23,6 +23,11 @@ def run(args):
     unit_cell_params = [vars['cella'], vars['cellb'], vars['cellc'], vars['anglea'], vars['angleb'],vars['anglec'],vars['spacegroup']]
 
   files = diffuse_conversion(vars['diffuse'])
+
+
+  #print '***************************************'
+  print files
+  #print '***************************************'
   
   if vars['lunus'] == 'yes':
     os.system("mkdir " + vars['diffuse'] +"/processed")
@@ -33,9 +38,12 @@ def run(args):
     for file in files:
       frame_averaging(vars['diffuse'] + '/processed/proc.' + file)
 
+    print 'The reference frame is %s' %vars['reference']
+
     reference_frame(vars['diffuse'] + '/processed/proc.', vars['reference'])
 
     for file in files:
+      print 'The file currently being processed is %s' %file
       frame_scaling(vars['diffuse'] + '/processed/proc.', file)
 
     genlat(vars['diffuse'],files)
@@ -170,9 +178,11 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
   mode_var=process(mode)
 
   print file
+
+  print "punchim " + p + file + " " + punch_var + "image0.img"
     
   #punchim removes pixels within a specified XY region
-  os.system("punchim " + p + file + " " + punch_var + " image0.img")
+  os.system("punchim " + p + file + " " + punch_var + p + "image0.img")
 
   #thrshim removes pixels above and below a given threshold
   os.system("thrshim " + p + "image0.img" + " " + thr_var + " " + p + "image.img")
@@ -305,7 +315,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
-  args += 'file_format= %s ' %input
+  args += 'file_format=%s ' %input
   args += 'diffuse.lattice.resolution=%0.2f ' %resolution
   args += 'cell.a=%0.2f ' %float(cella)
   args += 'cell.b=%0.2f ' %float(cellb)
