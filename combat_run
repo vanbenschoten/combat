@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -o /netapp/home/vanben/lunus_processing/hewl01/COMBAT
-#$ -e /netapp/home/vanben/lunus_processing/hewl01/COMBAT
+#$ -o /netapp/home/vanben/lunus_processing/blga05/COMBAT
+#$ -e /netapp/home/vanben/lunus_processing/blga05/COMBAT
 #$ -cwd
 #$ -l mem_free=2G
 #$ -pe smp 8
 #$ -R yes
 #$ -l arch=linux-x64
-#$ -l h_rt=24:00:00
+#$ -l h_rt=48:00:00
 
 source /netapp/home/vanben/programs/phenix-dev-1660/phenix_env.sh
 source /netapp/home/vanben/ccp4/ccp4-6.3.0/bin/ccp4.setup-sh

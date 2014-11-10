@@ -157,6 +157,7 @@ if __name__=="__main__":
   latzdim = (int(cellc/res)+1)*2
   ifformatidx = [a.find("file_format")==0 for a in args].index(True)
   ifformat = args.pop(ifformatidx).split("=")[1]
+  print 'ifformat is %s' %ifformat
 
   import os
 
