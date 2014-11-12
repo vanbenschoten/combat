@@ -69,9 +69,9 @@ def run(args):
     friedel_hkl(vars['lattice_name'])
 
 
-  #What is the file name that will be passed to aniso_convert()
-  #if vars['anisotropic'] == 'yes':
-    #aniso_convert(vars['lattice_name'] + '.hkl')
+  #What is the file name that will be passed to aniso_convert()? It's the variable "lattice_name" with "_raw" appended (less any changes due to symmetry extensions)
+  if vars['anisotropic'] == 'yes':
+    aniso_convert(vars['lattice_name'], vars['file_format'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution']) #Will use second half of string addition to adjust for proper file name
 
   
 def get_input_dict(args):
@@ -329,6 +329,35 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
 
   return args
 
+def single_conversion(map_1):
+
+  f_1 = open(map_1,'r')
+
+  lines_1 = f_1.readlines()
+
+  lattice = dict()
+
+  for line in lines_1:
+    signal = line.split()
+    if len(signal) == 4:
+      h = int(signal[0])
+      k = int(signal[1])
+      l = int(signal[2])
+      intensity = float(signal[3])
+
+      if h not in lattice:
+        lattice[h] = dict()
+
+        if k not in lattice[h]:
+            lattice[h][k] = dict()
+
+        if l not in lattice[h][k]:
+            lattice[h][k][l] = dict()
+
+          lattice[h][k][l]["Signal_1"] = float(intensity)
+          #print intensity
+  return lattice
+
 def map_symmetry_extension(map, unitcell):
 
   from cctbx import crystal
@@ -398,19 +427,29 @@ def friedel_hkl(map):
   fin.close()
   fout.close()
 
-def hkl_to_vtk(data, cell_a, cell_b, cell_c, num_a, num_b, num_c):
+def hkl_to_vtk(file, cella, cellb, cellc, res, file_name):
   #Origin is defined at 0 0 0
-  vtkfile = open('domain.vtk', 'w')
+  vtkfile = open(file_name + '.vtk', 'w')
+  latxdim = (int(cella/res)+1)*2
+  latydim = (int(cellb/res)+1)*2
+  latzdim = (int(cellc/res)+1)*2
 
-  latsize = (2*num_a+1)*(2*num_b+1)*(2*num_c+1)
+  a_recip = 1./cella
+  b_recip = 1./cellb
+  c_recip = 1./cellc
+
+  i0=latxdim/2-1
+  j0=latydim/2-1
+  k0=latzdim/2-1
+  latsize = latxdim*latydim*latzdim
 
   print >>vtkfile,"# vtk DataFile Version 2.0"
   print >>vtkfile,"Generated using labelit tools"
   print >>vtkfile,"ASCII"
   print >>vtkfile,"DATASET STRUCTURED_POINTS"
-  print >>vtkfile,"DIMENSIONS %d %d %d"%(num_a*2+1,num_b*2+1,num_c*2+1)
-  print >>vtkfile,"SPACING %f %f %f"%(1/cell_a,1/cell_b,1/cell_c)
-  print >>vtkfile,"ORIGIN -0.33481463 -0.33481463 -0.33481463" #%(-i0*a_recip,-j0*b_recip,-k0*c_recip)
+  print >>vtkfile,"DIMENSIONS %d %d %d"%(latxdim,latydim,latzdim)
+  print >>vtkfile,"SPACING %f %f %f"%(a_recip,b_recip,c_recip)
+  print >>vtkfile,"ORIGIN %f %f %f" %(-i0*a_recip,-j0*b_recip,-k0*c_recip)
   print >>vtkfile,"POINT_DATA %d"%(latsize)
   print >>vtkfile,"SCALARS volume_scalars float 1"
   print >>vtkfile,"LOOKUP_TABLE default\n"
@@ -430,6 +469,25 @@ def hkl_to_vtk(data, cell_a, cell_b, cell_c, num_a, num_b, num_c):
       print >>vtkfile,""
 
 
+def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
+  file = file_name + '_raw'
+  if file_format == "vtk":
+    os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
+    os.system('avgrlt ' + file + '.lat ' + file + '.rf')
+    os.system('subrflt ' + file + '.rf ' + file + '.lat ' + file + '_sub.lat')
+    os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
+
+  elif file_format == "hkl":
+    data = single_conversion(file + '_raw.hkl')
+    hkl2vtk(data, cell_a, cell_b, cell_c, resolution, file)
+    os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
+    os.system('avgrlt ' + file + '.lat ' + file + '.rf')
+    os.system('subrflt ' + file + '.rf ' + file + '.lat ' + file + '_sub.lat')
+    os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
+    vtk2hkl(file + '_sub.vtk')
+
+  else:
+    print 'Sorry, the anisotropic conversion software does not recognize your file format'
 
 
 
