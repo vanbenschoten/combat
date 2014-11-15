@@ -71,7 +71,7 @@ def run(args):
 
   #What is the file name that will be passed to aniso_convert()? It's the variable "lattice_name" with "_raw" appended (less any changes due to symmetry extensions)
   if vars['anisotropic'] == 'yes':
-    aniso_convert(vars['lattice_name'], vars['file_format'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution']) #Will use second half of string addition to adjust for proper file name
+    aniso_convert(vars['lattice_name'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['file_format']) #Will use second half of string addition to adjust for proper file name
 
   
 def get_input_dict(args):
@@ -346,13 +346,13 @@ def single_conversion(map_1):
       intensity = float(signal[3])
 
       if h not in lattice:
-        lattice[h] = dict()
+         lattice[h] = dict()
 
-        if k not in lattice[h]:
-            lattice[h][k] = dict()
+      if k not in lattice[h]:
+         lattice[h][k] = dict()
 
-        if l not in lattice[h][k]:
-            lattice[h][k][l] = dict()
+      if l not in lattice[h][k]:
+          lattice[h][k][l] = dict()
 
           lattice[h][k][l]["Signal_1"] = float(intensity)
           #print intensity
@@ -478,7 +478,7 @@ def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
     os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
 
   elif file_format == "hkl":
-    data = single_conversion(file + '_raw.hkl')
+    data = single_conversion(file + '.hkl')
     hkl2vtk(data, cell_a, cell_b, cell_c, resolution, file)
     os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
     os.system('avgrlt ' + file + '.lat ' + file + '.rf')
