@@ -26,7 +26,7 @@ def run(args):
 
 
   #print '***************************************'
-  print files
+  #print files
   #print '***************************************'
   
   if vars['lunus'] == 'yes':
@@ -71,7 +71,8 @@ def run(args):
 
   #What is the file name that will be passed to aniso_convert()? It's the variable "lattice_name" with "_raw" appended (less any changes due to symmetry extensions)
   if vars['anisotropic'] == 'yes':
-    aniso_convert(vars['lattice_name'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['file_format']) #Will use second half of string addition to adjust for proper file name
+    aniso_convert(vars['lattice_name'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['file_format'])
+    print vars['file_format'] #Will use second half of string addition to adjust for proper file name
 
   
 def get_input_dict(args):
@@ -153,7 +154,7 @@ def diffuse_conversion(location):
       if file.endswith('.cbf'):
           print file
           new_file = location + '/' + file
-	  print new_file
+          print new_file
           cbf2img(new_file)
           files.append(file.rstrip(".cbf") + ".img")
       elif file.endswith('.img'):
@@ -478,18 +479,107 @@ def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
     os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
 
   elif file_format == "hkl":
+    print '*************The file is %s*********' %file
     data = single_conversion(file + '.hkl')
-    hkl2vtk(data, cell_a, cell_b, cell_c, resolution, file)
+    hkl2vtk(data, cell_a, cell_b, cell_c, resolution, file + '.hkl')
     os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
     os.system('avgrlt ' + file + '.lat ' + file + '.rf')
     os.system('subrflt ' + file + '.rf ' + file + '.lat ' + file + '_sub.lat')
     os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
-    vtk2hkl(file + '_sub.vtk')
+    os.system('python vtk2hkl_new.py %s_sub.vtk aniso.hkl %f %f %f %f > aniso.hkl'%(file, cell_a, cell_b, cell_c, resolution))
 
   else:
     print 'Sorry, the anisotropic conversion software does not recognize your file format'
 
+def hkl2vtk(data, cell_a, cell_b, cell_c, resolution, name):
+  #Origin is defined at 0 0 0
+  vtkfile = open(name, 'w')
 
+  num_a = int(cell_a/resolution)
+  num_b = int(cell_b/resolution)
+  num_c = int(cell_c/resolution)
+
+  latsize = (2*num_a+1)*(2*num_b+1)*(2*num_c+1)
+
+  print >>vtkfile,"# vtk DataFile Version 2.0"
+  print >>vtkfile,"Generated using labelit tools"
+  print >>vtkfile,"ASCII"
+  print >>vtkfile,"DATASET STRUCTURED_POINTS"
+  print >>vtkfile,"DIMENSIONS %d %d %d"%(num_a*2+1,num_b*2+1,num_c*2+1)
+  print >>vtkfile,"SPACING %f %f %f"%(1/cell_a,1/cell_b,1/cell_c)
+  print >>vtkfile,"ORIGIN %.8f %.8f %.8f" %(-num_a/cell_a,-num_b/cell_b,-num_c/cell_c)
+  print >>vtkfile,"POINT_DATA %d"%(latsize)
+  print >>vtkfile,"SCALARS volume_scalars float 1"
+  print >>vtkfile,"LOOKUP_TABLE default\n"
+
+    #print data[1][1][1]["Signal_1"]
+
+  for i in range(-num_a,num_a+1):
+    for j in range(-num_b,num_b+1):
+      for k in range(-num_c,num_c+1):
+        if i in data and j in data[i] and k in data[i][j]:      
+          print >>vtkfile,data[i][j][k]["Signal_1"], 
+          #print 'hello!!!'
+        else:
+          print >>vtkfile,"0.0", 
+
+
+      print >>vtkfile,""
+
+
+
+def vtk2hkl(file, cell_a, cell_b, cell_c, resolution):
+
+  fin = open(file,'r')
+  fout = open('aniso.hkl','w')
+
+  lines = fin.readlines()
+
+  num_a = int(cell_a/resolution)
+  num_b = int(cell_b/resolution)
+  num_c = int(cell_c/resolution)
+
+  h = -num_a
+  k = -num_b
+  print h
+  print k
+
+  count = 1
+
+  for line in lines[10:]:
+    l = -num_c
+    #print l
+    data = line.split()
+    print data
+    dic = dict()
+
+    count_item=0
+
+
+    for item in data:
+      if h not in dic:
+        dic[h] = dict()
+      if k not in dic[h]:
+        dic[h][k] = dict()
+      if l not in dic[h][k]:
+        dic[h][k][l] = dict()
+      
+      dic[h][k][l]["Signal"] = float(item)
+      #print h,k,l, float(item)
+      l+=1
+      
+    k += 1
+
+    if k == num_b+1:
+      k = -num_b
+      h += 1
+
+
+  for key_h in dic:
+    print key_h
+    for key_k in dic[key_h]:
+      for key_l in dic[key_h][key_k]:
+        fout.write(str(key_h) + ' ' + str(key_k) + ' ' + str(key_l) + ' ' + str(dic[key_h][key_k][key_l]["Signal"]) + '\n')
 
 if __name__=="__main__":
 
