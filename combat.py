@@ -64,7 +64,7 @@ def run(args):
 
   if vars['symmetry'] == 'yes':
 
-    pre_friedel = map_symmetry_extension(vars['lattice_name'], unit_cell_params)
+    map_symmetry_extension(vars['lattice_name'], unit_cell_params)
   
     friedel_hkl(vars['lattice_name'])
 
@@ -74,6 +74,9 @@ def run(args):
     aniso_convert(vars['lattice_name'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['file_format'])
     print vars['file_format'] #Will use second half of string addition to adjust for proper file name
 
+  if vars['statistics'] == 'yes':
+    os.system('phenix.reflection_statistics isotropic.mtz > isotropic_statistics.txt')
+    os.system('phenix.reflection_statistics anisotropic.mtz > anisotropic_statistics.txt')
   
 def get_input_dict(args):
 # return dictionary of keywords and their values
@@ -360,54 +363,57 @@ def single_conversion(map_1):
   return lattice
 
 def map_symmetry_extension(map, unitcell):
+###Returns symmetrized mtz format map
 
-  from cctbx import crystal
+  #Convert vtk map to lat and then to hkl
+  os.system('vtk2lat ' + map + ' raw_output.lat')
+  os.system('lat2hkl raw_output.lat raw_output.hkl')
+
+
   #Read in hkl file and populate miller array
-  name = map + '_raw.hkl'
-  inf = open(name, "r")
+  from cctbx import crystal
+  inf = open('raw_output.hkl', "r")
   indices = flex.miller_index()
   i_obs = flex.double()
-  sig_i = flex.double()
+  #sig_i = flex.double()
   for line in inf.readlines():
     assert len(line.split())==4
     line = line.strip().split()
     i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
-    sig_i_ = math.sqrt(i_obs_) 
+    #sig_i_ = math.sqrt(i_obs_) 
     #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
     indices.append([int(line[0]),int(line[1]),int(line[2])])
     i_obs.append(i_obs_)
-    sig_i.append(sig_i_)
+    #sig_i.append(sig_i_)
   inf.close()
 
-  # get miller array object
-  cs = crystal.symmetry(unit_cell=(float(unitcell[0]), float(unitcell[1]), float(unitcell[2]), float(unitcell[3]), float(unitcell[4]), float(unitcell[5])), space_group=unitcell[6])
-  ma = miller.array(miller_set=miller.set(cs, indices), data=i_obs, sigmas=sig_i)
+  #Get miller array object
+  ###NEED TO SET MTZ ARRAY "EXPAND TO P1"
+  cs = crystal.symmetry(unit_cell=(float(args[1]), float(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6])), space_group=args[7])
+  miller_set=miller.set(cs, indices, anomalous_flag=False)
+  ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
   ma.set_observation_type_xray_intensity()
-  ma_anom = ma.customized_copy(anomalous_flag=False)
-  #print ma_anom.anomalous_flag()
-  ma_p1 = ma_anom.expand_to_p1()
-
-  scalepack.merge.write(file_name= map + '_symmetrized.sca', miller_array=ma_p1)
-
-  final= map + '_symmetrized.sca'
+  mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+  mtz_dataset.mtz_object().write('output_p1.mtz')
 
   return final
 
 def friedel_hkl(map):
+###Converts mtz to hkl format map and applies Friedel's law
 
-  #map_new = map.rstrip('.sca')
+  os.system('phenix.mtz.dump -c output_p1.mtz > output_p1.hkl')
 
-  fin = open(map + '_symmetrized.sca','r')
-  fout = open(map+ '_final.hkl', 'w')
+  fin = open(map + 'output_p1.hkl','r')
+  fout = open(map+ 'output_friedel.hkl', 'w')
 
   lines = fin.readlines()
 
-  for line in lines:
+  for line in lines[10:]:
 
 
     data = line.split()
 
-    if len(data) == 5:
+    if len(data) == 4:
 
       h = int(data[0])
       h_new = -1*h
@@ -471,25 +477,38 @@ def hkl_to_vtk(file, cella, cellb, cellc, res, file_name):
 
 
 def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
-  file = file_name + '_raw'
-  if file_format == "vtk":
-    os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
-    os.system('avgrlt ' + file + '.lat ' + file + '.rf')
-    os.system('subrflt ' + file + '.rf ' + file + '.lat ' + file + '_sub.lat')
-    os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
 
-  elif file_format == "hkl":
-    print '*************The file is %s*********' %file
-    data = single_conversion(file + '.hkl')
-    hkl2vtk(data, cell_a, cell_b, cell_c, resolution, file + '.hkl')
-    os.system('vtk2lat ' + file + '.vtk ' + file + '.lat')
-    os.system('avgrlt ' + file + '.lat ' + file + '.rf')
-    os.system('subrflt ' + file + '.rf ' + file + '.lat ' + file + '_sub.lat')
-    os.system('lat2vtk '+ file + '_sub.lat ' + file + '_sub.vtk')
-    os.system('python vtk2hkl_new.py %s_sub.vtk aniso.hkl %f %f %f %f > aniso.hkl'%(file, cell_a, cell_b, cell_c, resolution))
+  os.system('hkl2vtk output_p1.hkl output_p1.vtk template.vtk')
+  os.system('vtk2lat output_p1.vtk output.lat')
+  os.system('avgrlt output.lat output.rf')
+  os.system('subrflt output.rf output.lat anisotropic.lat')
+  os.system('lat2hkl anisotropic.lat anisotropic.hkl')
 
-  else:
-    print 'Sorry, the anisotropic conversion software does not recognize your file format'
+  #Read in hkl file and populate miller array
+  from cctbx import crystal
+  inf = open('anisotropic.hkl', "r")
+  indices = flex.miller_index()
+  i_obs = flex.double()
+  #sig_i = flex.double()
+  for line in inf.readlines():
+    assert len(line.split())==4
+    line = line.strip().split()
+    i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
+    #sig_i_ = math.sqrt(i_obs_) 
+    #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
+    indices.append([int(line[0]),int(line[1]),int(line[2])])
+    i_obs.append(i_obs_)
+    #sig_i.append(sig_i_)
+  inf.close()
+
+  #Get miller array object
+  cs = crystal.symmetry(unit_cell=(float(args[1]), float(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6])), space_group=args[7])
+  miller_set=miller.set(cs, indices, anomalous_flag=False)
+  ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
+  ma.set_observation_type_xray_intensity()
+  mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+  mtz_dataset.mtz_object().write('anisotropic.mtz')
+
 
 def hkl2vtk(data, cell_a, cell_b, cell_c, resolution, name):
   #Origin is defined at 0 0 0
