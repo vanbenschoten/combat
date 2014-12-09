@@ -155,9 +155,6 @@ if __name__=="__main__":
   latxdim = (int(cella/res)+1)*2
   latydim = (int(cellb/res)+1)*2
   latzdim = (int(cellc/res)+1)*2
-  ifformatidx = [a.find("file_format")==0 for a in args].index(True)
-  ifformat = args.pop(ifformatidx).split("=")[1]
-  print 'ifformat is %s' %ifformat
 
   import os
 
@@ -274,47 +271,29 @@ if __name__=="__main__":
     else:
       lat[index] = 0
 
-  if ifformat == 'hkl':
 
-    vtkfile = open(ofname + '_raw.hkl',"w")
+  vtkfile = open(ofname + '_raw.vtk',"w")
 
-    a_recip = 1./cella
-    b_recip = 1./cellb
-    c_recip = 1./cellc
-
-    index = 0
-    for k in range(0,latzdim):
-      ll = k-k0
-      for j in range(0,latydim):
-        kk = j-j0
-        for i in range(0,latxdim):
-          hh = i-i0
-          vtkfile.write(str(int(hh)) + ' ' + str(int(kk)) + ' ' + str(int(ll)) + ' ' + str(lat[index]) + '\n')
-          index += 1
-
-  if ifformat == 'vtk':
-    vtkfile = open(ofname + '_raw.vtk',"w")
-
-    a_recip = 1./cella
-    b_recip = 1./cellb
-    c_recip = 1./cellc
+  a_recip = 1./cella
+  b_recip = 1./cellb
+  c_recip = 1./cellc
 
 
-    print >>vtkfile,"# vtk DataFile Version 2.0"
-    print >>vtkfile,"Generated using labelit tools"
-    print >>vtkfile,"ASCII"
-    print >>vtkfile,"DATASET STRUCTURED_POINTS"
-    print >>vtkfile,"DIMENSIONS %d %d %d"%(latxdim,latydim,latzdim)
-    print >>vtkfile,"SPACING %f %f %f"%(a_recip,b_recip,c_recip)
-    print >>vtkfile,"ORIGIN %f %f %f"%(-i0*a_recip,-j0*b_recip,-k0*c_recip)
-    print >>vtkfile,"POINT_DATA %d"%(latsize)
-    print >>vtkfile,"SCALARS volume_scalars float 1"
-    print >>vtkfile,"LOOKUP_TABLE default\n"
+  print >>vtkfile,"# vtk DataFile Version 2.0"
+  print >>vtkfile,"Generated using labelit tools"
+  print >>vtkfile,"ASCII"
+  print >>vtkfile,"DATASET STRUCTURED_POINTS"
+  print >>vtkfile,"DIMENSIONS %d %d %d"%(latxdim,latydim,latzdim)
+  print >>vtkfile,"SPACING %f %f %f"%(a_recip,b_recip,c_recip)
+  print >>vtkfile,"ORIGIN %f %f %f"%(-i0*a_recip,-j0*b_recip,-k0*c_recip)
+  print >>vtkfile,"POINT_DATA %d"%(latsize)
+  print >>vtkfile,"SCALARS volume_scalars float 1"
+  print >>vtkfile,"LOOKUP_TABLE default\n"
 
-    index = 0
-    for k in range(0,latxdim):
-      for j in range(0,latydim):
-        for i in range(0,latzdim):
-          print >>vtkfile,lat[index],
-          index += 1
-        print >>vtkfile,""
+  index = 0
+  for k in range(0,latxdim):
+    for j in range(0,latydim):
+      for i in range(0,latzdim):
+        print >>vtkfile,lat[index],
+        index += 1
+      print >>vtkfile,""
