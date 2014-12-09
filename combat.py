@@ -24,10 +24,6 @@ def run(args):
 
   files = diffuse_conversion(vars['diffuse'])
 
-
-  #print '***************************************'
-  #print files
-  #print '***************************************'
   
   if vars['lunus'] == 'yes':
     os.system("mkdir " + vars['diffuse'] +"/processed")
@@ -56,11 +52,6 @@ def run(args):
     
     os.system('libtbx.python genlat_labelit.py ' + args)
 
-    #if vars['file_format'] == hkl:
-       #data = dic_construct()
-
-    #"args" are the arguments normally passed to integrate.py on the command line (put into get_input_dict command)
-    #diffuse_integration(args)
 
   if vars['symmetry'] == 'yes':
 
@@ -73,10 +64,10 @@ def run(args):
   if vars['anisotropic'] == 'yes':
     aniso_convert(vars['lattice_name'], vars['cella'], vars['cellb'], vars['cellc'], vars['resolution'], vars['file_format'])
     print vars['file_format'] #Will use second half of string addition to adjust for proper file name
-
-  if vars['statistics'] == 'yes':
     os.system('phenix.reflection_statistics isotropic.mtz > isotropic_statistics.txt')
     os.system('phenix.reflection_statistics anisotropic.mtz > anisotropic_statistics.txt')
+
+
   
 def get_input_dict(args):
 # return dictionary of keywords and their values
@@ -333,40 +324,12 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
 
   return args
 
-def single_conversion(map_1):
-
-  f_1 = open(map_1,'r')
-
-  lines_1 = f_1.readlines()
-
-  lattice = dict()
-
-  for line in lines_1:
-    signal = line.split()
-    if len(signal) == 4:
-      h = int(signal[0])
-      k = int(signal[1])
-      l = int(signal[2])
-      intensity = float(signal[3])
-
-      if h not in lattice:
-         lattice[h] = dict()
-
-      if k not in lattice[h]:
-         lattice[h][k] = dict()
-
-      if l not in lattice[h][k]:
-          lattice[h][k][l] = dict()
-
-          lattice[h][k][l]["Signal_1"] = float(intensity)
-          #print intensity
-  return lattice
 
 def map_symmetry_extension(map, unitcell):
 ###Returns symmetrized mtz format map
 
   #Convert vtk map to lat and then to hkl
-  os.system('vtk2lat ' + map + ' raw_output.lat')
+  os.system('vtk2lat ' + map + '.vtk raw_output.lat')
   os.system('lat2hkl raw_output.lat raw_output.hkl')
 
 
@@ -434,51 +397,10 @@ def friedel_hkl(map):
   fin.close()
   fout.close()
 
-def hkl_to_vtk(file, cella, cellb, cellc, res, file_name):
-  #Origin is defined at 0 0 0
-  vtkfile = open(file_name + '.vtk', 'w')
-  latxdim = (int(cella/res)+1)*2
-  latydim = (int(cellb/res)+1)*2
-  latzdim = (int(cellc/res)+1)*2
-
-  a_recip = 1./cella
-  b_recip = 1./cellb
-  c_recip = 1./cellc
-
-  i0=latxdim/2-1
-  j0=latydim/2-1
-  k0=latzdim/2-1
-  latsize = latxdim*latydim*latzdim
-
-  print >>vtkfile,"# vtk DataFile Version 2.0"
-  print >>vtkfile,"Generated using labelit tools"
-  print >>vtkfile,"ASCII"
-  print >>vtkfile,"DATASET STRUCTURED_POINTS"
-  print >>vtkfile,"DIMENSIONS %d %d %d"%(latxdim,latydim,latzdim)
-  print >>vtkfile,"SPACING %f %f %f"%(a_recip,b_recip,c_recip)
-  print >>vtkfile,"ORIGIN %f %f %f" %(-i0*a_recip,-j0*b_recip,-k0*c_recip)
-  print >>vtkfile,"POINT_DATA %d"%(latsize)
-  print >>vtkfile,"SCALARS volume_scalars float 1"
-  print >>vtkfile,"LOOKUP_TABLE default\n"
-
-    #print data[1][1][1]["Signal_1"]
-
-  for i in range(-num_a,num_a+1):
-    for j in range(-num_b,num_b+1):
-      for k in range(-num_c,num_c+1):
-        if i in data and j in data[i] and k in data[i][j]:      
-          print >>vtkfile,data[i][j][k]["Signal_1"], 
-          #print 'hello!!!'
-        else:
-          print >>vtkfile,"0.0", 
-
-
-      print >>vtkfile,""
-
 
 def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
 
-  os.system('hkl2vtk output_p1.hkl output_p1.vtk template.vtk')
+  os.system('hkl2vtk output_p1.hkl output_p1.vtk output.vtk')
   os.system('vtk2lat output_p1.vtk output.lat')
   os.system('avgrlt output.lat output.rf')
   os.system('subrflt output.rf output.lat anisotropic.lat')
@@ -506,99 +428,10 @@ def aniso_convert(file_name, cell_a, cell_b, cell_c, resolution, file_format):
   miller_set=miller.set(cs, indices, anomalous_flag=False)
   ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
   ma.set_observation_type_xray_intensity()
+  ma.expand_to_p1()
   mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
   mtz_dataset.mtz_object().write('anisotropic.mtz')
 
-
-def hkl2vtk(data, cell_a, cell_b, cell_c, resolution, name):
-  #Origin is defined at 0 0 0
-  vtkfile = open(name, 'w')
-
-  num_a = int(cell_a/resolution)
-  num_b = int(cell_b/resolution)
-  num_c = int(cell_c/resolution)
-
-  latsize = (2*num_a+1)*(2*num_b+1)*(2*num_c+1)
-
-  print >>vtkfile,"# vtk DataFile Version 2.0"
-  print >>vtkfile,"Generated using labelit tools"
-  print >>vtkfile,"ASCII"
-  print >>vtkfile,"DATASET STRUCTURED_POINTS"
-  print >>vtkfile,"DIMENSIONS %d %d %d"%(num_a*2+1,num_b*2+1,num_c*2+1)
-  print >>vtkfile,"SPACING %f %f %f"%(1/cell_a,1/cell_b,1/cell_c)
-  print >>vtkfile,"ORIGIN %.8f %.8f %.8f" %(-num_a/cell_a,-num_b/cell_b,-num_c/cell_c)
-  print >>vtkfile,"POINT_DATA %d"%(latsize)
-  print >>vtkfile,"SCALARS volume_scalars float 1"
-  print >>vtkfile,"LOOKUP_TABLE default\n"
-
-    #print data[1][1][1]["Signal_1"]
-
-  for i in range(-num_a,num_a+1):
-    for j in range(-num_b,num_b+1):
-      for k in range(-num_c,num_c+1):
-        if i in data and j in data[i] and k in data[i][j]:      
-          print >>vtkfile,data[i][j][k]["Signal_1"], 
-          #print 'hello!!!'
-        else:
-          print >>vtkfile,"0.0", 
-
-
-      print >>vtkfile,""
-
-
-
-def vtk2hkl(file, cell_a, cell_b, cell_c, resolution):
-
-  fin = open(file,'r')
-  fout = open('aniso.hkl','w')
-
-  lines = fin.readlines()
-
-  num_a = int(cell_a/resolution)
-  num_b = int(cell_b/resolution)
-  num_c = int(cell_c/resolution)
-
-  h = -num_a
-  k = -num_b
-  print h
-  print k
-
-  count = 1
-
-  for line in lines[10:]:
-    l = -num_c
-    #print l
-    data = line.split()
-    print data
-    dic = dict()
-
-    count_item=0
-
-
-    for item in data:
-      if h not in dic:
-        dic[h] = dict()
-      if k not in dic[h]:
-        dic[h][k] = dict()
-      if l not in dic[h][k]:
-        dic[h][k][l] = dict()
-      
-      dic[h][k][l]["Signal"] = float(item)
-      #print h,k,l, float(item)
-      l+=1
-      
-    k += 1
-
-    if k == num_b+1:
-      k = -num_b
-      h += 1
-
-
-  for key_h in dic:
-    print key_h
-    for key_k in dic[key_h]:
-      for key_l in dic[key_h][key_k]:
-        fout.write(str(key_h) + ' ' + str(key_k) + ' ' + str(key_l) + ' ' + str(dic[key_h][key_k][key_l]["Signal"]) + '\n')
 
 if __name__=="__main__":
 
