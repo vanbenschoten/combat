@@ -55,16 +55,16 @@ def run(args):
 
   if vars['symmetry'] == 'yes':
 
-    map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'])
+    map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
   
     friedel_hkl(vars['lattice_name'])
 
 
   #What is the file name that will be passed to aniso_convert()? It's the variable "lattice_name" with "_raw" appended (less any changes due to symmetry extensions)
   if vars['anisotropic'] == 'yes':
-    aniso_convert(unit_cell_params, vars['spacegroup'],vars['lattice_name'])
+    aniso_convert(unit_cell_params, vars['spacegroup'],vars['lattice_name'],vars['resolution'])
     os.system('phenix.reflection_statistics %s_raw.mtz > isotropic_statistics.txt' %vars['lattice_name'])
-    os.system('phenix.reflection_statistics anisotropic.mtz > anisotropic_statistics.txt')
+    os.system('phenix.reflection_statistics %s_anisotropic.mtz > anisotropic_statistics.txt' %vars['lattice_name'])
 
 
   
@@ -323,7 +323,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   return args
 
 
-def map_symmetry_extension(map, unitcell,sg):
+def map_symmetry_extension(map, unitcell,sg,res):
 ###Returns symmetrized mtz format map
 
   #Convert vtk map to lat and then to hkl
@@ -354,12 +354,11 @@ def map_symmetry_extension(map, unitcell,sg):
   miller_set=miller.set(cs, indices, anomalous_flag=False)
   ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
   ma.set_observation_type_xray_intensity()
-  ma_p1 = ma.expand_to_p1()
   mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
   mtz_dataset.mtz_object().write(map + '_raw.mtz')
 
   #Kludgy way of expanding MTZ file to p1...but it works
-  os.system('phenix.reflection_file_converter %s_raw.mtz --expand-to-p1 --non-anomalous --mtz=%s_p1.mtz' %(map,map))
+  os.system('phenix.reflection_file_converter %s_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=%s_p1.mtz' %(map,res,map))
 
   #mtz_data = ma_p1.as_mtz_dataset(column_root_label="Intensity")
   #mtz_data.mtz_object().write('output_p1.mtz')
@@ -403,7 +402,7 @@ def friedel_hkl(map):
   fout.close()
 
 
-def aniso_convert(uc,sg,map):
+def aniso_convert(uc,sg,map,res):
 
   os.system('hkl2vtk %s_friedel.hkl %s_friedel.vtk %s_raw.vtk' %(map,map,map))
   os.system('vtk2lat %s_friedel.vtk %s_friedel.lat' %(map,map))
@@ -423,8 +422,12 @@ def aniso_convert(uc,sg,map):
     i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
     #sig_i_ = math.sqrt(i_obs_) 
     #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
+
     indices.append([int(line[0]),int(line[1]),int(line[2])])
-    i_obs.append(i_obs_)
+    if i_obs_ == -32768.00:
+      i_obs.append(0.0)
+    else:
+      i_obs.append(i_obs_)
     #sig_i.append(sig_i_)
   inf.close()
 
@@ -433,9 +436,10 @@ def aniso_convert(uc,sg,map):
   miller_set=miller.set(cs, indices, anomalous_flag=False)
   ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
   ma.set_observation_type_xray_intensity()
-  ma.expand_to_p1()
   mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
-  mtz_dataset.mtz_object().write('anisotropic.mtz')
+  mtz_dataset.mtz_object().write('%s_anisotropic.mtz' %map)
+
+  #os.system('phenix.reflection_file_converter anisotropic.mtz --resolution=%d --mtz=%s_anisotropic.mtz --non-anomalous' %(res,map))
 
 
 if __name__=="__main__":
