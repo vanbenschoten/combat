@@ -53,18 +53,64 @@ def run(args):
     os.system('libtbx.python genlat_labelit.py ' + args)
 
 
-  if vars['symmetry'] == 'yes':
+  #if vars['symmetry'] == 'yes':
 
-    map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
+    #map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
   
-    friedel_hkl(vars['lattice_name'])
+    #friedel_hkl(vars['lattice_name'])
 
 
   #What is the file name that will be passed to aniso_convert()? It's the variable "lattice_name" with "_raw" appended (less any changes due to symmetry extensions)
   if vars['anisotropic'] == 'yes':
+
+
+    #symmetrized anisotropic map
+    map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
+  
+    friedel_hkl(vars['lattice_name'])
+
     aniso_convert(unit_cell_params, vars['spacegroup'],vars['lattice_name'],vars['resolution'])
     os.system('phenix.reflection_statistics %s_raw.mtz > isotropic_statistics.txt' %vars['lattice_name'])
     os.system('phenix.reflection_statistics %s_anisotropic.mtz > anisotropic_statistics.txt' %vars['lattice_name'])
+
+
+    #Raw anisotropic map (which is then symmetrized)
+    os.system('vtk2lat %s_raw.vtk %s_raw.lat' %(map,map))
+    os.system('avgrlt %s_raw.lat %s_raw.rf' %(map,map))
+    os.system('subrflt %s_raw.rf %s_raw.lat anisotropic_raw.lat' %(map,map))
+    os.system('lat2hkl anisotropic_raw.lat anisotropic_raw.hkl')
+  #Read in hkl file and populate miller array
+    from cctbx import crystal
+    inf = open('anisotropic_raw.hkl', "r")
+    indices = flex.miller_index()
+    i_obs = flex.double()
+    #sig_i = flex.double()
+    for line in inf.readlines():
+      assert len(line.split())==4
+      line = line.strip().split()
+      i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
+    #sig_i_ = math.sqrt(i_obs_) 
+    #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
+
+      indices.append([int(line[0]),int(line[1]),int(line[2])])
+      if i_obs_ != -32768.00:
+        i_obs.append(i_obs_)
+      #sig_i.append(sig_i_)
+    inf.close()
+
+  #Get miller array object
+    u_c = unit_cell_params
+    cs = crystal.symmetry(unit_cell=(float(u_c[0]), float(u_c[1]), float(u_c[2]), float(u_c[3]), float(u_c[4]), float(u_c[5])), space_group=sg)
+    miller_set=miller.set(cs, indices, anomalous_flag=False)
+    ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
+    ma.set_observation_type_xray_intensity()
+    mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+    mtz_dataset.mtz_object().write('anisotropic_raw.mtz')
+
+    os.system('phenix.reflection_file_converter anisotropic_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_raw_p1.mtz' %float(vars['resolution'])
+
+
+
 
 
   
@@ -342,8 +388,8 @@ def map_symmetry_extension(map, unitcell,sg,res):
     line = line.strip().split()
     i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
     #sig_i_ = math.sqrt(i_obs_) 
-    if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
-      indices.append([int(line[0]),int(line[1]),int(line[2])])
+    if(abs(i_obs_)>1.e-6) and i_obs_ != -32768.0: # perhaps you don't want zeros
+      indices.append([int(line[0]),int(line[2]),int(line[1])])
       i_obs.append(i_obs_)
     #sig_i.append(sig_i_)
   inf.close()
@@ -424,9 +470,7 @@ def aniso_convert(uc,sg,map,res):
     #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
 
     indices.append([int(line[0]),int(line[1]),int(line[2])])
-    if i_obs_ == -32768.00:
-      i_obs.append(0.0)
-    else:
+    if i_obs_ != -32768.00:
       i_obs.append(i_obs_)
     #sig_i.append(sig_i_)
   inf.close()
