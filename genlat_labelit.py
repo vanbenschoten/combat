@@ -269,7 +269,7 @@ if __name__=="__main__":
     if ((ct[index] > 0) & (lat[index] != mask_tag)):
       lat[index] /= ct[index]
     else:
-      lat[index] = 0
+      lat[index] = -32768.0
 
 
   vtkfile = open(ofname + '_raw.vtk',"w")
