@@ -75,9 +75,9 @@ def run(args):
 
 
     #Raw anisotropic map (which is then symmetrized)
-    os.system('vtk2lat %s_raw.vtk %s_raw.lat' %(map,map))
-    os.system('avgrlt %s_raw.lat %s_raw.rf' %(map,map))
-    os.system('subrflt %s_raw.rf %s_raw.lat anisotropic_raw.lat' %(map,map))
+    os.system('vtk2lat %s_raw.vtk %s_raw.lat' %(vars['lattice_name'],vars['lattice_name']))
+    os.system('avgrlt %s_raw.lat %s_raw.rf' %(vars['lattice_name'],vars['lattice_name']))
+    os.system('subrflt %s_raw.rf %s_raw.lat anisotropic_raw.lat' %(vars['lattice_name'],vars['lattice_name']))
     os.system('lat2hkl anisotropic_raw.lat anisotropic_raw.hkl')
   #Read in hkl file and populate miller array
     from cctbx import crystal
@@ -92,22 +92,22 @@ def run(args):
     #sig_i_ = math.sqrt(i_obs_) 
     #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
 
-      indices.append([int(line[0]),int(line[1]),int(line[2])])
-      if i_obs_ != -32768.00:
+      if i_obs_ != -32768.0:
+        indices.append([int(line[0]),int(line[1]),int(line[2])])
         i_obs.append(i_obs_)
       #sig_i.append(sig_i_)
     inf.close()
 
   #Get miller array object
     u_c = unit_cell_params
-    cs = crystal.symmetry(unit_cell=(float(u_c[0]), float(u_c[1]), float(u_c[2]), float(u_c[3]), float(u_c[4]), float(u_c[5])), space_group=sg)
+    cs = crystal.symmetry(unit_cell=(float(u_c[0]), float(u_c[1]), float(u_c[2]), float(u_c[3]), float(u_c[4]), float(u_c[5])), space_group=vars['spacegroup'])
     miller_set=miller.set(cs, indices, anomalous_flag=False)
     ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
     ma.set_observation_type_xray_intensity()
     mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
     mtz_dataset.mtz_object().write('anisotropic_raw.mtz')
 
-    os.system('phenix.reflection_file_converter anisotropic_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_raw_p1.mtz' %float(vars['resolution'])
+    os.system('phenix.reflection_file_converter anisotropic_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_raw_p1.mtz' %float(vars['resolution']))
 
 
 
@@ -469,8 +469,8 @@ def aniso_convert(uc,sg,map,res):
     #sig_i_ = math.sqrt(i_obs_) 
     #if(abs(i_obs_)>1.e-6): # perhaps you don't want zeros
 
-    indices.append([int(line[0]),int(line[1]),int(line[2])])
-    if i_obs_ != -32768.00:
+    if i_obs_ != -32768.0:
+      indices.append([int(line[0]),int(line[1]),int(line[2])])
       i_obs.append(i_obs_)
     #sig_i.append(sig_i_)
   inf.close()
