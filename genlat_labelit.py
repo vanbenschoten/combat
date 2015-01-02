@@ -291,9 +291,9 @@ if __name__=="__main__":
   print >>vtkfile,"LOOKUP_TABLE default\n"
 
   index = 0
-  for k in range(0,latxdim):
+  for k in range(0,latzdim):
     for j in range(0,latydim):
-      for i in range(0,latzdim):
+      for i in range(0,latxdim):
         print >>vtkfile,lat[index],
         index += 1
       print >>vtkfile,""
