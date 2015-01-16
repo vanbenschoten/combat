@@ -45,7 +45,6 @@ def pixmap(Isize1,Isize2,this_frame_phi_deg,pixel_size,size1,size2,spot_conventi
   for x in xrange(x1,x2): # slow dimension
     for y in xrange(Isize2): # fast dimension
       mmPos = pixels_to_mmPos(x,y,pixel_size)
-      #mmPos = pixels_to_mmPos(y,x,pixel_size)
       rawspot = (mmPos[0],mmPos[1],this_frame_phi_deg)
       transpot = SXYC.select(rawspot,spot_convention)
       raw_spot_input.append(transpot)
@@ -94,13 +93,13 @@ def procimg(Isize1,Isize2,scale,mask_tag,A_matrix,rvec,DATA,latxdim,latydim,latz
       else:
         ll = int(H[2]+.5)
       dh = abs(H[0]-hh)
-      dk = abs(H[1]-kk)
-      dl = abs(H[2]-ll)
+      dk = abs(H[1]-ll)
+      dl = abs(H[2]-kk)
       val = int(DATA[(x,y)])
       if ((val != mask_tag) & (val != 0) & (dh > .25)&(dk > .25)&(dl > .25)):
-        i = int(H[0]+i0+.5)
-        j = int(H[1]+j0+.5)
-        k = int(H[2]+k0+.5)
+        i = hh+i0
+        j = kk+j0
+        k = ll+k0
         if ((i>0)&(j>0)&(k>0)&(i<latxdim)&(j<latydim)&(k<latzdim)):
           index = k*latxdim*latydim + j*latxdim + i
           if ((val>0) & (val < 32767)):
@@ -193,8 +192,8 @@ if __name__=="__main__":
 
     words = line.split()
 
-    imgname = words[1]
-    scale = float(words[2])
+    imgname = words[0]
+    scale = float(words[1])
 
     # path_of_interest = os.path.join(name_of_interest.cwd,imgname)
 
@@ -285,9 +284,9 @@ if __name__=="__main__":
   print >>vtkfile,"LOOKUP_TABLE default\n"
 
   index = 0
-  for k in range(0,latxdim):
+  for k in range(0,latzdim):
     for j in range(0,latydim):
-      for i in range(0,latzdim):
+      for i in range(0,latxdim):
         print >>vtkfile,lat[index],
         index += 1
       print >>vtkfile,""
