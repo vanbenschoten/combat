@@ -46,11 +46,11 @@ def run(args):
 
   if vars['genlat'] == 'yes':
 
-    args = args_generator(vars['diffuse'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
+    args = args_generator(vars['bragg'], vars['index_1'], vars['index_2'], vars['index_3'], unit_cell_params[0], unit_cell_params[1], unit_cell_params[2], vars['resolution'], vars['lattice_name'], vars['processors'],unit_cell_params, vars['known_setting'])
 
     print args
     
-    os.system('libtbx.python genlat_labelit.py ' + args)
+    os.system('libtbx.python genlat_labelit_parallel.py ' + args)
 
 
   #if vars['symmetry'] == 'yes':
@@ -101,10 +101,9 @@ def run(args):
   #Get miller array object
     u_c = unit_cell_params
     cs = crystal.symmetry(unit_cell=(float(u_c[0]), float(u_c[1]), float(u_c[2]), float(u_c[3]), float(u_c[4]), float(u_c[5])), space_group=vars['spacegroup'])
-    miller_set=miller.set(cs, indices, anomalous_flag=False)
+    miller_set=miller.set(cs, indices)
     ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
-    ma.set_observation_type_xray_intensity()
-    mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+    mtz_dataset = ma.as_mtz_dataset(column_root_label="Amplitude")
     mtz_dataset.mtz_object().write('anisotropic_raw.mtz')
 
     os.system('phenix.reflection_file_converter anisotropic_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_raw_p1.mtz' %float(vars['resolution']))
@@ -232,7 +231,7 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
 
 
   #normim corrects for solid-angle normalization and detector-face rotation in a diffraction image
-  os.system("normim " + p +  "image00.img " + p +  "image1.img")
+  os.system("normim " + p +  "image00.img " + p +  "image1.img 2.82 5")
 
   #modeim removes the Bragg peaks from an image by mode filtering using a specified mask size
   os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode_var)
@@ -329,13 +328,13 @@ def genlat(prefix, files):
 
   return
 
-def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, cellc, resolution, lattice_name, processors, u_p, k_setting):
+def args_generator(location_bragg, index_1, index_2, index_3, cella, cellb, cellc, resolution, lattice_name, processors, u_p, k_setting):
 
   #Will need a way to read in the known_setting parameter
 
-  os.system('cxi.image2pickle ' + location_diffuse + '/' + index_1)
-  os.system('cxi.image2pickle ' + location_diffuse + '/' + index_2)
-  os.system('cxi.image2pickle ' + location_diffuse + '/' + index_3)
+  os.system('cxi.image2pickle ' + location_bragg + '/' + index_1)
+  os.system('cxi.image2pickle ' + location_bragg + '/' + index_2)
+  #os.system('cxi.image2pickle ' + location_diffuse + '/' + index_3)
 
 
   split_1 = index_1.split('.')
@@ -344,14 +343,14 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   split_2 = index_2.split('.')
   location_2 = split_2[0]
 
-  split_3 = index_3.split('.')
-  location_3 = split_3[0]
+  #split_3 = index_3.split('.')
+  #location_3 = split_3[0]
 
   args = ''
 
-  args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_1)
-  args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_2)
-  args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_3)
+  args += 'indexing.data=%s/%s.pickle ' %(location_bragg, location_1)
+  args += 'indexing.data=%s/%s.pickle ' %(location_bragg, location_2)
+  #args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_3)
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
@@ -359,7 +358,7 @@ def args_generator(location_diffuse, index_1, index_2, index_3, cella, cellb, ce
   args += 'cell.a=%0.2f ' %float(cella)
   args += 'cell.b=%0.2f ' %float(cellb)
   args += 'cell.c=%0.2f ' %float(cellc)
-  args += 'inputlist.fname=%s/genlat.input ' %location_diffuse
+  args += 'inputlist.fname=../diffuse/genlat.input ' #%location_diffuse
   args += 'diffuse.lattice.fname=%s ' %lattice_name
   args += 'target_cell=%s,%s,%s,%s,%s,%s ' %(u_p[0], u_p[1], u_p[2], u_p[3], u_p[4], u_p[5])
   args += 'known_setting=%d ' %int(k_setting)
@@ -389,7 +388,7 @@ def map_symmetry_extension(map, unitcell,sg,res):
     i_obs_ = float(line[3])#/10000 #10000 is a uniform scale factor meant to re-size all diffuse intensities (normally too large for scalepack)
     #sig_i_ = math.sqrt(i_obs_) 
     if(abs(i_obs_)>1.e-6) and i_obs_ != -32768.0: # perhaps you don't want zeros
-      indices.append([int(line[0]),int(line[2]),int(line[1])])
+      indices.append([int(line[0]),int(line[1]),int(line[2])])
       i_obs.append(i_obs_)
     #sig_i.append(sig_i_)
   inf.close()
@@ -397,10 +396,9 @@ def map_symmetry_extension(map, unitcell,sg,res):
   #Get miller array object
   ###NEED TO SET MTZ ARRAY "EXPAND TO P1"
   cs = crystal.symmetry(unit_cell=(float(unitcell[0]), float(unitcell[1]), float(unitcell[2]), float(unitcell[3]), float(unitcell[4]), float(unitcell[5])), space_group=sg)
-  miller_set=miller.set(cs, indices, anomalous_flag=False)
+  miller_set=miller.set(cs, indices)
   ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
-  ma.set_observation_type_xray_intensity()
-  mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+  mtz_dataset = ma.as_mtz_dataset(column_root_label="Amplitude")
   mtz_dataset.mtz_object().write(map + '_raw.mtz')
 
   #Kludgy way of expanding MTZ file to p1...but it works
@@ -477,10 +475,9 @@ def aniso_convert(uc,sg,map,res):
 
   #Get miller array object
   cs = crystal.symmetry(unit_cell=(float(uc[0]), float(uc[1]), float(uc[2]), float(uc[3]), float(uc[4]), float(uc[5])), space_group=sg)
-  miller_set=miller.set(cs, indices, anomalous_flag=False)
+  miller_set=miller.set(cs, indices)
   ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
-  ma.set_observation_type_xray_intensity()
-  mtz_dataset = ma.as_mtz_dataset(column_root_label="Intensity")
+  mtz_dataset = ma.as_mtz_dataset(column_root_label="Amplitude")
   mtz_dataset.mtz_object().write('%s_anisotropic.mtz' %map)
 
   #os.system('phenix.reflection_file_converter anisotropic.mtz --resolution=%d --mtz=%s_anisotropic.mtz --non-anomalous' %(res,map))
