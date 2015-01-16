@@ -334,7 +334,7 @@ def args_generator(location_bragg, index_1, index_2, index_3, cella, cellb, cell
 
   os.system('cxi.image2pickle ' + location_bragg + '/' + index_1)
   os.system('cxi.image2pickle ' + location_bragg + '/' + index_2)
-  #os.system('cxi.image2pickle ' + location_diffuse + '/' + index_3)
+  os.system('cxi.image2pickle ' + location_bragg + '/' + index_3)
 
 
   split_1 = index_1.split('.')
@@ -343,14 +343,14 @@ def args_generator(location_bragg, index_1, index_2, index_3, cella, cellb, cell
   split_2 = index_2.split('.')
   location_2 = split_2[0]
 
-  #split_3 = index_3.split('.')
-  #location_3 = split_3[0]
+  split_3 = index_3.split('.')
+  location_3 = split_3[0]
 
   args = ''
 
   args += 'indexing.data=%s/%s.pickle ' %(location_bragg, location_1)
   args += 'indexing.data=%s/%s.pickle ' %(location_bragg, location_2)
-  #args += 'indexing.data=%s/%s.pickle ' %(location_diffuse, location_3)
+  args += 'indexing.data=%s/%s.pickle ' %(location_bragg, location_3)
   args += 'codecamp.maxcell=800 '
   args += 'index_only=True '
   args += 'analyze.image=45 '
