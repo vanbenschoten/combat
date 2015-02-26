@@ -1,9 +1,0 @@
-CODA: COmprehensive Diffuse Analysis
-
-NOTE: this program is a work in progress and as such no guarantees are made about its performance.
-
-QUICKSTART:
-
-1) Set up three folders in your target directory: bragg, diffuse and COMBAT
-
-2) Copy combat.py, genlat_labelit_parallel.py, proc.makeref, proc.scale and combat.params into the /COMBAT directory

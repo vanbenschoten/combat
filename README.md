@@ -11,12 +11,19 @@ In order to run these scripts, you'll need a working copy of LUNUS along with th
 #Contents
 
 combat.params:                COMBAT parameter file
+
 combat.py:                    Wrapper script called on command line
+
 combat_aniso.py:              Alternative wrapper script with reversed anisotropic map calculation ordering
+
 genlat_labelit.py:            AVB version of map calculation script (called by combat.py)
+
 genlat_labelit_parallel.py:   MEW version of map calculation script called by combat.py
+
 proc.makeref:                 Shell script for creating reference diffuse frame for processed image scaling
+
 proc.scale:                   Shell script for scaling non-reference processed diffuse images
+
 two_run:                      SGE submission script for UCSF QB3 computational cluster
 
 
