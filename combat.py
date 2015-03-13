@@ -231,7 +231,7 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
 
 
   #normim corrects for solid-angle normalization and detector-face rotation in a diffraction image
-  os.system("normim " + p +  "image00.img " + p +  "image1.img 2.82 5")
+  os.system("normim " + p +  "image00.img " + p +  "image1.img")
 
   #modeim removes the Bragg peaks from an image by mode filtering using a specified mask size
   os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode_var)
