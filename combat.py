@@ -65,23 +65,24 @@ def run(args):
 
 
     #symmetrized anisotropic map
-    map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
+    #map_symmetry_extension(vars['lattice_name'], unit_cell_params, vars['spacegroup'],vars['resolution'])
   
-    friedel_hkl(vars['lattice_name'])
+    #friedel_hkl(vars['lattice_name'])
 
-    aniso_convert(unit_cell_params, vars['spacegroup'],vars['lattice_name'],vars['resolution'])
-    os.system('phenix.reflection_statistics %s_raw.mtz > isotropic_statistics.txt' %vars['lattice_name'])
-    os.system('phenix.reflection_statistics %s_anisotropic.mtz > anisotropic_statistics.txt' %vars['lattice_name'])
+    #aniso_convert(unit_cell_params, vars['spacegroup'],vars['lattice_name'],vars['resolution'])
+    #os.system('phenix.reflection_statistics %s_raw.mtz > isotropic_statistics.txt' %vars['lattice_name'])
+    #os.system('phenix.reflection_statistics %s_anisotropic.mtz > anisotropic_statistics.txt' %vars['lattice_name'])
 
 
     #Raw anisotropic map (which is then symmetrized)
-    os.system('vtk2lat %s_raw.vtk %s_raw.lat' %(vars['lattice_name'],vars['lattice_name']))
-    os.system('avgrlt %s_raw.lat %s_raw.rf' %(vars['lattice_name'],vars['lattice_name']))
-    os.system('subrflt %s_raw.rf %s_raw.lat anisotropic_raw.lat' %(vars['lattice_name'],vars['lattice_name']))
-    os.system('lat2hkl anisotropic_raw.lat anisotropic_raw.hkl')
+    os.system('vtk2lat %s.vtk %s.lat' %(vars['lattice_name'],vars['lattice_name']))
+    os.system('lat2hkl %s.lat %s.hkl' %(vars['lattice_name'],vars['lattice_name']))
+    os.system('avgrlt %s.lat %s.rf' %(vars['lattice_name'],vars['lattice_name']))
+    os.system('subrflt %s.rf %s.lat %s_anisotropic.lat' %(vars['lattice_name'],vars['lattice_name'],vars['lattice_name']))
+    os.system('lat2hkl %s_anisotropic.lat %s_anisotropic.hkl' %(vars['lattice_name'],vars['lattice_name']))
   #Read in hkl file and populate miller array
     from cctbx import crystal
-    inf = open('anisotropic_raw.hkl', "r")
+    inf = open('%s_anisotropic.hkl' %(vars['lattice_name']), "r")
     indices = flex.miller_index()
     i_obs = flex.double()
     #sig_i = flex.double()
@@ -104,9 +105,9 @@ def run(args):
     miller_set=miller.set(cs, indices)
     ma = miller.array(miller_set=miller_set, data=i_obs, sigmas=None)
     mtz_dataset = ma.as_mtz_dataset(column_root_label="Amplitude")
-    mtz_dataset.mtz_object().write('anisotropic_raw.mtz')
+    mtz_dataset.mtz_object().write('anisotropic.mtz')
 
-    os.system('phenix.reflection_file_converter anisotropic_raw.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_raw_p1.mtz' %float(vars['resolution']))
+    os.system('phenix.reflection_file_converter anisotropic.mtz --expand-to-p1 --non-anomalous --resolution=%d --mtz=anisotropic_p1.mtz' %float(vars['resolution']))
 
 
 
@@ -231,7 +232,7 @@ def frame_processing(filepath,file,punch,thr,pol,mode):
 
 
   #normim corrects for solid-angle normalization and detector-face rotation in a diffraction image
-  os.system("normim " + p +  "image00.img " + p +  "image1.img 2.82 5")
+  os.system("normim " + p +  "image00.img " + p +  "image1.img")
 
   #modeim removes the Bragg peaks from an image by mode filtering using a specified mask size
   os.system("modeim "+ p +  "image1.img " + p + "image2.img " + mode_var)
