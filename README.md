@@ -31,7 +31,8 @@ two_run:                      SGE submission script for UCSF QB3 computational c
 #Instructions
 Because COMBAT is still a work in progress (and unpublished), we don't encourage general usage of the pipeline just yet. However, we're working hard on getting there!
 
-
+*General program call*
+libtbx.python combat.py combat.params
 
 #Authors
 Andrew Van Benschoten (andrew.vanbenschoten@ucsf.edu)
