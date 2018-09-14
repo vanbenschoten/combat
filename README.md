@@ -1,14 +1,14 @@
-#Introduction
+# Introduction
 COMBAT is a comprehensive data pipeline for converting raw diffuse scattering images into 3D reciprocal space maps. The program is built on top of the diffuse imaging software LUNUS (http://lunus.sourceforge.net/), as well as the Computational Crystallography Toolbox (http://cctbx.sourceforge.net/).
 
 
 
-#Install
+# Install
 In order to run these scripts, you'll need a working copy of LUNUS along with the most recent PHENIX software distribution.
 
 
 
-#Contents
+# Contents
 
 combat.params:                COMBAT parameter file
 
@@ -28,13 +28,13 @@ two_run:                      SGE submission script for UCSF QB3 computational c
 
 
 
-#Instructions
+# Instructions
 Because COMBAT is still a work in progress (and unpublished), we don't encourage general usage of the pipeline just yet. However, we're working hard on getting there!
 
 *General program call*
 libtbx.python combat.py combat.params
 
-#Authors
+# Authors
 Andrew Van Benschoten (andrew.vanbenschoten@ucsf.edu)
 
 Michael Wall          (mewall@lanl.gov)
